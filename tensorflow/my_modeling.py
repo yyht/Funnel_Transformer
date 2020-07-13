@@ -310,17 +310,15 @@ class FunnelTFM(object):
 
         logits = tf.matmul(output_layer, output_weights, transpose_b=True)
         logits = tf.nn.bias_add(logits, output_bias)
+        one_hot_labels = tf.one_hot(labels, n_class)
+        per_example_loss = tf.nn.softmax_cross_entropy_with_logits(
+                      logits=logits,
+                      labels=tf.stop_gradient(one_hot_labels),
+                      )
+        if return_logits:
+          return per_example_loss, logits
 
-        with tf.variable_scope(scope, reuse=reuse):
-          one_hot_labels = tf.one_hot(labels, n_class)
-          per_example_loss = tf.nn.softmax_cross_entropy_with_logits(
-                        logits=logits,
-                        labels=tf.stop_gradient(one_hot_labels),
-                        )
-          if return_logits:
-            return per_example_loss, logits
-
-          return per_example_loss
+        return per_example_loss
 
   
   
