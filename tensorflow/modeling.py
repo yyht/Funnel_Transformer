@@ -423,6 +423,7 @@ class FunnelTFM(object):
             for repeat_idx in range(cur_repeat_size):
               sub_idx = (param_idx * cur_repeat_size + repeat_idx)
               do_pooling = block_idx > 0 and sub_idx == 0
+              print(do_pooling, "===do ppoling===")
 
               # prepare inputs to the current layer
               if do_pooling:
