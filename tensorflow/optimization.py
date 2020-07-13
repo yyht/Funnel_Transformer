@@ -108,6 +108,8 @@ def compute_gradients(total_loss):
   else:
     exclude_from_weight_decay = []
 
+  print(exclude_from_weight_decay, "==exclude_from_weight_decay==")
+
   optimizer = AdamWeightDecayOptimizer(
       learning_rate=learning_rate,
       beta_1=FLAGS.adam_beta1,
@@ -269,6 +271,7 @@ class AdamWeightDecayOptimizer(tf.train.Optimizer):
                          / bias_correction1)
       else:
         learning_rate = self.learning_rate
+        print("==bias_correction==")
 
       update_with_lr = learning_rate * update
 
