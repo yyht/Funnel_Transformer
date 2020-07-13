@@ -192,7 +192,7 @@ class FunnelTFM(object):
     reuse = kargs["reuse"]
     layer_num = kargs.get("layer_num", -1)
     scope = self.config.get("scope", "model")
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
       self.sequence_output = self.get_encoder_layers(layer_num)
 
       # The "pooler" converts the encoded sequence tensor of shape
@@ -293,7 +293,7 @@ class FunnelTFM(object):
     hidden = self.get_pooled_output()
 
     with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
-      with tf.variable_scope(scope, reuse=reuse):
+      with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
 
         output_weights = tf.get_variable(
           "output_weights", [n_class, self.config.d_model],
