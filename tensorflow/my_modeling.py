@@ -317,11 +317,10 @@ class FunnelTFM(object):
                         logits=logits,
                         labels=tf.stop_gradient(one_hot_labels),
                         )
-          loss = tf.reduce_mean(loss)
           if return_logits:
-            return loss, logits
+            return per_example_loss, logits
 
-          return loss
+          return per_example_loss
 
   
   
