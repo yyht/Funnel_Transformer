@@ -37,7 +37,7 @@ NUM_HOSTS=1
 NUM_CORE_PER_HOST=8
 
 
-python classifier.py \
+nohup python classifier.py \
     --use_tpu=True \
     --tpu=${TPU_NAME} \
     --data_dir=${data_dir} \
