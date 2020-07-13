@@ -8,7 +8,7 @@ import funnel_transformer_ops
 import numpy as np
 import tensorflow as tf
 import copy
-import os
+import os, json
 from bunch import Bunch
 
 def parse_depth_string(depth_str):
