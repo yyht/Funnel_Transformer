@@ -60,5 +60,8 @@ nohup python classifier.py \
     --do_eval=True \
     --do_submit=True \
     --task_name=${task} \
+    --use_wd_exclusion=True \
+    --adam_correction=False \
+    weight_decay=0.01
     $@
 
