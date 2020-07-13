@@ -795,7 +795,7 @@ def get_model_fn(n_class):
       input_mask = features["input_mask"]
       labels = tf.reshape(features["label_ids"], [-1])
 
-      if model_type == 'offcial':
+      if model_type == 'official':
         with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
           scope = FLAGS.cls_scope if FLAGS.cls_scope else FLAGS.task_name.lower()
           if FLAGS.task_name.lower() == "sts-b":
