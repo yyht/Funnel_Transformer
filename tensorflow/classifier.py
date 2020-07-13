@@ -771,7 +771,7 @@ def get_model_fn(n_class):
 
     #### Build model
     model_type = 'official'
-    if model_type == 'offcial':
+    if model_type == 'official':
       if FLAGS.model_config:
         net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
       else:
