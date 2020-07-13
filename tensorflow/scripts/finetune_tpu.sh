@@ -50,8 +50,7 @@ nohup python classifier.py \
     --model_dir=${GS_MODEL_DIR} \
     --init_checkpoint=${init_checkpoint} \
     --model_config=${model_config} \
-    --learning_rate=0.00001 \
-    --lr_layer_decay_rate=0.9 \
+    --learning_rate=0.00002 \
     --warmup_steps=155 \
     --train_steps=1550 \
     --train_batch_size=${bsz} \
