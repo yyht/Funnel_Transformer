@@ -788,7 +788,7 @@ def get_model_fn(n_class):
 
     #### Get loss from inputs
     @model_utils.bf16_decorator
-    def cls_or_reg_loss_func(features, model):
+    def cls_or_reg_loss_func(features, model, model_type):
       """Get classification loss."""
       inputs = features["input_ids"]
       seg_id = features["segment_ids"]
@@ -825,7 +825,7 @@ def get_model_fn(n_class):
 
         return per_example_loss, logits
 
-    per_example_loss, logits = cls_or_reg_loss_func(features, model)
+    per_example_loss, logits = cls_or_reg_loss_func(features, model, model_type)
     total_loss = tf.reduce_mean(per_example_loss)
 
     #### Check model parameters
