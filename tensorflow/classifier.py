@@ -823,7 +823,7 @@ def get_model_fn(n_class):
                 seg_id=seg_id, input_mask=input_mask, use_tpu=FLAGS.use_tpu,
                 use_bfloat16=FLAGS.use_bfloat16)
 
-        return per_example_loss, logits
+      return per_example_loss, logits
 
     per_example_loss, logits = cls_or_reg_loss_func(features, model, model_type)
     total_loss = tf.reduce_mean(per_example_loss)
