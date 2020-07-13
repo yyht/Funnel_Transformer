@@ -488,6 +488,8 @@ def rel_pos_bias(q_head, pos_enc, d_model, n_head, d_head, initializer,
   # [B x T x N x D]
   q_head_r = tf.einsum("...inh,dnh->...ind", q_head + r_r_bias * scale,
                        r_kernel)
+  print((q_head + r_r_bias * scale).get_shape(), 
+    (r_kernel).get_shape(), "==rel_pos_bias shape==", q_head_r.get_shape())
 
   # [(B) x T x N x D]
   q_head_r_1 = q_head_r * tf.expand_dims(enc_q_1, -2)
