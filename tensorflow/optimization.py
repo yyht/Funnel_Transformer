@@ -62,6 +62,10 @@ def _get_variable_name(param_name):
 def compute_gradients(total_loss):
   """Separate the function of gradient computation."""
   monitor_dict = {}
+  print(FLAGS.weight_decay, "==weight_decay==")
+  print(FLAGS.lr_layer_decay_rate, "==lr_layer_decay_rate==")
+  print(FLAGS.use_wd_exclusion, "==use_wd_exclusion==")
+  print(FLAGS.adam_correction, "==adam_correction==")
 
   ##### Configure optimizer
   global_step = tf.train.get_or_create_global_step()
