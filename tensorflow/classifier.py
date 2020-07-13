@@ -21,6 +21,7 @@ import tensorflow.compat.v1 as tf
 import data_utils
 import metric_ops
 import modeling
+import my_modeling
 import model_utils
 import optimization
 import classifier_utils
@@ -769,12 +770,17 @@ def get_model_fn(n_class):
     del params
 
     #### Build model
-    if FLAGS.model_config:
-      net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
-    else:
-      net_config = modeling.ModelConfig.init_from_flags()
-    net_config.to_json(os.path.join(FLAGS.model_dir, "net_config.json"))
-    model = modeling.FunnelTFM(net_config)
+    model_type = 'official'
+    if model_type == 'offcial':
+      if FLAGS.model_config:
+        net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
+      else:
+        net_config = modeling.ModelConfig.init_from_flags()
+      net_config.to_json(os.path.join(FLAGS.model_dir, "net_config.json"))
+      model = modeling.FunnelTFM(net_config)
+    elif model_type == 'my':
+      net_config_path = os.path.join(FLAGS.model_dir, "net_config_base_my.json")
+      model = my_modeling.FunnelTFM(net_config)
 
     #### Training or Evaluation
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
@@ -788,19 +794,33 @@ def get_model_fn(n_class):
       input_mask = features["input_mask"]
       labels = tf.reshape(features["label_ids"], [-1])
 
-      with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
+      if model_type == 'offcial':
+        with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
+          scope = FLAGS.cls_scope if FLAGS.cls_scope else FLAGS.task_name.lower()
+          if FLAGS.task_name.lower() == "sts-b":
+            labels = tf.cast(labels, tf.float32)
+            per_example_loss, logits = model.get_regression_loss(
+                labels, inputs, is_training, scope, seg_id=seg_id,
+                input_mask=input_mask, use_tpu=FLAGS.use_tpu,
+                use_bfloat16=FLAGS.use_bfloat16)
+          else:
+            per_example_loss, logits = model.get_classification_loss(
+                labels, inputs, n_class, is_training, scope,
+                seg_id=seg_id, input_mask=input_mask, use_tpu=FLAGS.use_tpu,
+                use_bfloat16=FLAGS.use_bfloat16)
+      elif model_type == 'my':
         scope = FLAGS.cls_scope if FLAGS.cls_scope else FLAGS.task_name.lower()
         if FLAGS.task_name.lower() == "sts-b":
-          labels = tf.cast(labels, tf.float32)
-          per_example_loss, logits = model.get_regression_loss(
-              labels, inputs, is_training, scope, seg_id=seg_id,
-              input_mask=input_mask, use_tpu=FLAGS.use_tpu,
-              use_bfloat16=FLAGS.use_bfloat16)
+            labels = tf.cast(labels, tf.float32)
+            per_example_loss, logits = model.get_regression_loss(
+                labels, inputs, is_training, scope, seg_id=seg_id,
+                input_mask=input_mask, use_tpu=FLAGS.use_tpu,
+                use_bfloat16=FLAGS.use_bfloat16)
         else:
-          per_example_loss, logits = model.get_classification_loss(
-              labels, inputs, n_class, is_training, scope,
-              seg_id=seg_id, input_mask=input_mask, use_tpu=FLAGS.use_tpu,
-              use_bfloat16=FLAGS.use_bfloat16)
+            per_example_loss, logits = model.get_classification_loss(
+                labels, inputs, n_class, is_training, scope,
+                seg_id=seg_id, input_mask=input_mask, use_tpu=FLAGS.use_tpu,
+                use_bfloat16=FLAGS.use_bfloat16)
 
         return per_example_loss, logits
 
