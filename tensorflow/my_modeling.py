@@ -315,10 +315,7 @@ class FunnelTFM(object):
                       logits=logits,
                       labels=tf.stop_gradient(one_hot_labels),
                       )
-        if return_logits:
-          return per_example_loss, logits
-
-        return per_example_loss
+        return per_example_loss, logits
 
   
   
