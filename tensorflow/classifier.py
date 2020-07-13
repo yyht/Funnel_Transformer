@@ -1001,6 +1001,11 @@ def main(_):
   tf.reset_default_graph()
   tf.logging.set_verbosity(tf.logging.INFO)
 
+  print(FLAGS.weight_decay, "==weight_decay==")
+  print(FLAGS.lr_layer_decay_rate, "==lr_layer_decay_rate==")
+  print(FLAGS.use_wd_exclusion, "==use_wd_exclusion==")
+  print(FLAGS.adam_correction, "==adam_correction==")
+
   #### Validate flags
   if (not FLAGS.do_train and not FLAGS.do_eval and not FLAGS.do_submit):
     raise ValueError(
