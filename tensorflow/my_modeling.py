@@ -273,17 +273,23 @@ class FunnelTFM(object):
                               seg_id=None, input_mask=None, use_tpu=False,
                               use_bfloat16=False):
 
+    if is_training:
+      dropout_prob = self.config.dropout
+      dropatt = self.config.dropatt
+    else:
+      dropout_prob = 0.0
+      dropatt = 0.0
     self.build_embedder(inputs, seg_id, 
-                  self.config.dropout, 
-                  self.config.dropatt,
+                  dropout_prob, 
+                  dropatt,
                   use_bfloat16,
                   is_training,
                   use_tpu)
 
     self.build_encoder(inputs, input_mask, 
                   seg_id,
-                  self.config.dropout, 
-                  self.config.dropatt,
+                  dropout_prob, 
+                  dropatt,
                   is_training,
                   use_bfloat16,
                   embedding_output=None,
@@ -303,9 +309,9 @@ class FunnelTFM(object):
           "output_bias", [n_class], initializer=tf.zeros_initializer())
 
         if is_training:
-          dropout_prob = 0.0
-        else:
           dropout_prob = self.config.dropout
+        else:
+          dropout_prob = 0.0
         output_layer = tf.nn.dropout(hidden, keep_prob=1 - dropout_prob)
 
         logits = tf.matmul(output_layer, output_weights, transpose_b=True)

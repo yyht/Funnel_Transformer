@@ -235,10 +235,9 @@ def dropout_op(tensor, rate, training, *args, **kwargs):
 	# 	output = stable_dropout.dropout(tensor, rate, dropout_name)
 	# else:
 	if training:
-		return tensor
+		return tf.nn.dropout(tensor, keep_prob=1.0 - rate)
 	else:
-		output = tf.nn.dropout(tensor, keep_prob=1.0 - rate)
-		return output
+		return tensor
 
 def gelu(x):
 	"""Gaussian Error Linear Unit.
