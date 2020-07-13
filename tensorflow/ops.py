@@ -117,7 +117,7 @@ def dense(x, out_shape, initializer, inp_shape=None, begin_axis=-1,
 
     output = tf.einsum(
         "{0}{1},{1}{2}->{0}{2}".format(prefix, inp_str, out_str), x, kernel)
-    print(x.get_shape(), kernel.get_shape(), "==embedding shape==", prefix,
+    print(x.get_shape(), kernel.get_shape(), "==dense shape==", prefix,
         inp_str, out_str, output.get_shape())
 
     if use_bias:
