@@ -780,10 +780,11 @@ def get_model_fn(n_class):
       model = modeling.FunnelTFM(net_config)
     elif model_type == 'my':
       net_config_path = os.path.join(FLAGS.model_dir, "net_config_base_my.json")
-      model = my_modeling.FunnelTFM(net_config)
+      model = my_modeling.FunnelTFM(net_config_path)
 
     #### Training or Evaluation
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
+    print(model, '==model==')
 
     #### Get loss from inputs
     @model_utils.bf16_decorator
