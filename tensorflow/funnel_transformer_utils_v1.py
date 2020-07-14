@@ -232,7 +232,7 @@ def init_attn_structures(net_config, attn_structures,
 				pos_enc = (enc, shift)
 			else:
 				raise NotImplementedError
-			seg_mat = funnel_transformer_ops.seg_id_to_mat(seg_id, seg_id)
+			seg_mat = funnel_transformer_ops.seg_id_to_mat(net_config, seg_id, seg_id)
 			num_real_token = seq_len - 1
 			func_mask = tf.pad(
 					tf.ones([num_real_token, num_real_token], dtype=hidden.dtype),
