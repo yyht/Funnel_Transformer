@@ -11,8 +11,8 @@ import tensorflow as tf
 import numpy as np
 import os
 
-from utils.funnel_transformer import funnel_transformer_ops_v1 as funnel_transformer_ops
-from utils.funnel_transformer import funnel_transformer_utils_v1 as funnel_transformer_utils
+import funnel_transformer_ops_v1 as funnel_transformer_ops
+import funnel_transformer_utils_v1 as funnel_transformer_utils
 
 def input_embedding(net_config, initializer, inputs, is_training, seg_id=None, pos_id=None,
 									word_embed_table=None, use_tpu=False, scope="input",
