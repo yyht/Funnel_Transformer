@@ -32,7 +32,7 @@ tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
 init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt
 model_config=${GS_INIT_CKPT_DIR}/net_config.json
 
-bsz=64
+bsz=16
 NUM_HOSTS=1
 NUM_CORE_PER_HOST=1
 

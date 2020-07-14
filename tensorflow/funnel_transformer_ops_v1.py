@@ -227,13 +227,13 @@ def dropout_op(tensor, rate, training, *args, **kwargs):
 	tf.logging.info("****** dropout name: %s, rate: %s, training: %s"%(dropout_name, str(rate), str(training)))
 	if rate is None or rate == 0.0 or not training:
 		tf.logging.info("****** original *******")
-		return tensor
+		return tf.identity(tensor)
 	if training:
 		tf.logging.info("****** dropout *******")
 		return tf.nn.dropout(tensor, keep_prob=1.0 - rate)
 	else:
 		tf.logging.info("****** original *******")
-		return tensor
+		return tf.identity(tensor)
 
 
 def gelu(x):
