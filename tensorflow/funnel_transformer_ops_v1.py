@@ -435,7 +435,7 @@ def rel_multihead_attn(q, k, v, pos_enc, seg_mat, attn_mask, d_model, n_head,
 		# post projection
 		attn_out = dense(attn_vec, d_model, initializer=initializer,
 										 inp_shape=[n_head, d_head], scope="o")
-		attn_out = dropout_op(attn_out, dropout, training=is_training, name+"/rel_multihead_attn")
+		attn_out = dropout_op(attn_out, dropout, training=is_training, name=name+"/rel_multihead_attn")
 
 		# residual + layer normalization
 		output, post_dict = residual_and_layer_norm(q, attn_out,
