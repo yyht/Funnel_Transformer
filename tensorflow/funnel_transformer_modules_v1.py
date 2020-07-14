@@ -15,13 +15,13 @@ import funnel_transformer_ops_v1 as funnel_transformer_ops
 import funnel_transformer_utils_v1 as funnel_transformer_utils
 
 def input_embedding(net_config, initializer, inputs, is_training, seg_id=None, pos_id=None,
-									word_embed_table=None, use_tpu=False, scope="input",
-									reuse=tf.AUTO_REUSE, dtype=tf.float32,
-									name='embed',
-								embedding_table_adv=None,
-								embedding_seq_adv=None,
-								emb_adv_pos='emb_adv_pre',
-								stop_gradient=False):
+											word_embed_table=None, use_tpu=False, scope="input",
+											reuse=tf.AUTO_REUSE, dtype=tf.float32,
+											name='embed',
+										embedding_table_adv=None,
+										embedding_seq_adv=None,
+										emb_adv_pos='emb_adv_pre',
+										stop_gradient=False):
 	"""Turn input ids to input embedding."""
 
 	net_config = net_config

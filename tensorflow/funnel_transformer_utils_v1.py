@@ -370,6 +370,7 @@ def tfmxl_layer(net_config, q, k, v, pos_enc, seg_mat, attn_mask,
 
   ret_dict = {}
   output, attn_dict = funnel_transformer_ops.rel_multihead_attn(
+  		net_config=net_config,
       q=q,
       k=k,
       v=v,

@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 
 
-# FLAGS = flags.FLAGS
+# FLAGS = net_config.FLAGS
 
 
 INF = 1e6
@@ -310,7 +310,7 @@ def positionwise_ffn(inp, d_model, d_inner, dropout, dropact, initializer,
 	return output, ret_dict
 
 
-def rel_attn_core(
+def rel_attn_core(net_config,
 		d_model, n_head, d_head, q, k, v, pos_enc, seg_mat, attn_mask, attn_bias,
 		dropatt, is_training, initializer, func_mask=None,
 		rel_attn_type="factorized", name="rel_attn"):
@@ -353,12 +353,12 @@ def rel_attn_core(
 	else:
 		##### Utilize the decomposed version when using TPU #####
 		if rel_attn_type == "factorized":
-			if FLAGS.verbose:
+			if net_config.verbose:
 				tf.logging.info("Compute rel-pos attn with factorized implementation.")
 			pos_bias = rel_pos_bias(q_head, pos_enc, d_model, n_head, d_head,
 															initializer, func_mask=func_mask, dtype=tf_float)
 		elif rel_attn_type == "rel_shift":
-			if FLAGS.verbose:
+			if net_config.verbose:
 				tf.logging.info("Compute rel-pos attn with rel-shift implementation.")
 			klen = tf.shape(content_bias)[-1]
 			pos_bias = rel_pos_bias_gpu(q_head, pos_enc, d_model, n_head, d_head,
@@ -371,7 +371,7 @@ def rel_attn_core(
 	if seg_mat is None:
 		seg_bias = 0
 	else:
-		if FLAGS.verbose:
+		if net_config.verbose:
 			tf.logging.info("Compute rel-seg attn.")
 		seg_bias = rel_seg_bias(q_head, seg_mat, n_head, d_head, initializer,
 														func_mask=func_mask, dtype=tf_float)
@@ -381,13 +381,13 @@ def rel_attn_core(
 
 	# add extra attention score if provided
 	if attn_bias is not None:
-		if FLAGS.verbose:
+		if net_config.verbose:
 			tf.logging.info("Attention bias shape: %s", attn_bias.shape)
 		attn_score += attn_bias * scale
 
 	# perform masking
 	if attn_mask is not None:
-		if FLAGS.verbose:
+		if net_config.verbose:
 			tf.logging.info("Attention mask shape: %s", attn_mask.shape)
 		ret_dict["attn_mask"] = attn_mask
 		attn_score = attn_score - INF * attn_mask
@@ -416,7 +416,7 @@ def rel_attn_core(
 	return attn_vec, ret_dict
 
 
-def rel_multihead_attn(q, k, v, pos_enc, seg_mat, attn_mask, d_model, n_head,
+def rel_multihead_attn(net_config, q, k, v, pos_enc, seg_mat, attn_mask, d_model, n_head,
 											 d_head, dropout, dropatt, is_training, initializer,
 											 attn_bias=None, func_mask=None, scope="rel_attn",
 											 reuse=None, rel_attn_type="factorized",
@@ -427,7 +427,7 @@ def rel_multihead_attn(q, k, v, pos_enc, seg_mat, attn_mask, d_model, n_head,
 
 	with tf.variable_scope(scope, reuse=reuse) as scope:
 		# attention core
-		attn_vec, attn_core_dict = rel_attn_core(
+		attn_vec, attn_core_dict = rel_attn_core(net_config,
 				d_model, n_head, d_head, q, k, v, pos_enc, seg_mat, attn_mask,
 				attn_bias, dropatt, is_training, initializer, func_mask=func_mask,
 				rel_attn_type=rel_attn_type)
@@ -621,7 +621,7 @@ def rel_seg_bias(q_head, seg_mat, n_head, d_head, initializer, func_mask=None,
 	return seg_bias
 
 
-def seg_id_to_mat(seg_q, seg_k):
+def seg_id_to_mat(net_config, seg_q, seg_k):
 	"""Convert `seg_id` to `seg_mat`."""
 	if seg_q is None or seg_k is None:
 		return None
@@ -630,8 +630,8 @@ def seg_id_to_mat(seg_q, seg_k):
 
 	# Treat [cls] as in the same segment as both A & B
 	cls_mat = tf.logical_or(
-			tf.expand_dims(tf.equal(seg_q, tf.constant([FLAGS.seg_id_cls])), -1),
-			tf.expand_dims(tf.equal(seg_k, tf.constant([FLAGS.seg_id_cls])), -2))
+			tf.expand_dims(tf.equal(seg_q, tf.constant([net_config.seg_id_cls])), -1),
+			tf.expand_dims(tf.equal(seg_k, tf.constant([net_config.seg_id_cls])), -2))
 	seg_mat = tf.logical_or(cls_mat, seg_mat)
 
 	return seg_mat
