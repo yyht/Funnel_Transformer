@@ -149,6 +149,8 @@ def encoder(net_config,
 						attn_structures,
 						output, seg_id, pos_id, is_training, 
 						attn_structures_name)
+				if attn_structures is None:
+					attn_structures = (pos_enc, seg_mat, func_mask)
 			else:
 				pre_attn_pooling_name = os.path.join(scope, str(block_idx), 'pre_attn_pooling')
 				pool_ret = funnel_transformer_utils.pre_attn_pooling(
@@ -211,7 +213,7 @@ def encoder(net_config,
 								block_idx, layer_idx, repeat_idx)
 						funnel_transformer_ops.update_ret_dict(ret_dict, layer_dict, prefix)
 
-	return output, hiddens, ret_dict
+	return output, hiddens, ret_dict, attn_structures
 
 def decoder(net_config, 
 						hiddens,
