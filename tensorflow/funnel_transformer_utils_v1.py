@@ -400,6 +400,6 @@ def tfmxl_layer(net_config, q, k, v, pos_enc, seg_mat, attn_mask,
       initializer=initializer,
       name=name)
 
-  ops.update_ret_dict(ret_dict, attn_dict, "attn")
-  ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
+  funnel_transformer_ops.update_ret_dict(ret_dict, attn_dict, "attn")
+  funnel_transformer_ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
   return output, ret_dict
