@@ -225,7 +225,7 @@ def dropout_op(tensor, rate, training, *args, **kwargs):
 	# 	output = stable_dropout.dropout(tensor, rate, dropout_name)
 	# else:
 	tf.logging.info("****** dropout name: %s, rate: %s, training: %s"%(dropout_name, str(rate), str(training)))
-	if rate is None or rate == 0.0 or not training:
+	if rate is None or rate == 0.0: # or not training:
 		return tensor
 	if training:
 		tf.logging.info("****** dropout *******")
