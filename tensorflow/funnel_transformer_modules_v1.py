@@ -180,7 +180,7 @@ def encoder(net_config,
 
 						# attention layer
 						tfmxl_name = os.path.join(scope, str(block_idx), str(layer_idx), str(repeat_idx), 'tfmxl_layer')
-						output, layer_dict = funnel_transformer_ops.tfmxl_layer(
+						output, layer_dict = funnel_transformer_utils.tfmxl_layer(
 								net_config=net_config,
 								q=q,
 								k=k,
