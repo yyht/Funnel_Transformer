@@ -770,7 +770,7 @@ def get_model_fn(n_class):
     del params
 
     #### Build model
-    model_type = 'my'
+    model_type = 'official'
     if model_type == 'official':
       if FLAGS.model_config:
         net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
