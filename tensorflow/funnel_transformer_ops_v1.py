@@ -284,7 +284,7 @@ def residual_and_layer_norm(residual, hidden, norm_shape=None):
 
 def positionwise_ffn(inp, d_model, d_inner, dropout, dropact, initializer,
 										 activation_type="gelu", scope="ff", is_training=True,
-										 reuse=None):
+										 reuse=None, name="ffn"):
 	"""Position-wise Feed-forward Network."""
 	ret_dict = {}
 
