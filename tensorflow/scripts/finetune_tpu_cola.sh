@@ -12,7 +12,7 @@ GS_ROOT=gs://yyht_source/pretrain
 GS_INIT_CKPT_DIR=${GS_ROOT}/model/B4-4-4H768-ELEC-FULL-TF
 
 task=cola
-data_dir=${GS_ROOT}/glue/COLA
+data_dir=${GS_ROOT}/glue/CoLA
 
 # task=sts-b
 # data_dir=${GS_ROOT}/data/glue/STS-B
