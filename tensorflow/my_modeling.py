@@ -320,11 +320,12 @@ class FunnelTFM(object):
 				# Always cast to float32 for softmax & loss
 				if logits.dtype != tf.float32:
 					logits = tf.cast(logits, tf.float32)
-				one_hot_labels = tf.one_hot(labels, n_class)
-				per_example_loss = tf.nn.softmax_cross_entropy_with_logits(
-											logits=logits,
-											labels=tf.stop_gradient(one_hot_labels),
-											)
+				one_hot_labels = tf.one_hot(labels, n_class, dtype=logits.dtype)
+				# per_example_loss = tf.nn.softmax_cross_entropy_with_logits(
+				# 							logits=logits,
+				# 							labels=tf.stop_gradient(one_hot_labels),
+				# 							)
+				per_example_loss = -tf.reduce_sum(tf.nn.log_softmax(logits) * one_hot_labels, -1)
 				return per_example_loss, logits
 
 	
