@@ -337,7 +337,9 @@ def init_attn_structures(net_config, attn_structures,
 					tf.ones([num_real_token, num_real_token], dtype=hidden.dtype),
 					[[1, 0], [1, 0]])
 
-		return (pos_enc, seg_mat, func_mask)
+			return (pos_enc, seg_mat, func_mask)
+		else:
+			return attn_structures
 
 def input_projection(net_config, input_embed, initializer):
 	"""Project input embedding to a proper dimension if needed."""

@@ -206,8 +206,9 @@ class FunnelTFM(object):
 				initializer = get_initializer(self.config)
 				first_token_tensor = tf.squeeze(self.sequence_output[:, 0:1, :], axis=1)
 				self.pooled_output = tf.layers.dense(
-						first_token_tensor,
-						self.config.hidden_size,
+						# first_token_tensor,
+						self.encoder_hiddens[:, 0],
+						self.config.d_model,
 						activation=tf.tanh,
 						kernel_initializer=initializer,
 						use_bias=True)
