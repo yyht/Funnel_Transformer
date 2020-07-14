@@ -63,6 +63,7 @@ nohup python classifier.py \
     --use_wd_exclusion=True \
     --adam_correction=False \
     --weight_decay=0.01 \
-    --adam_correction=False
+    --adam_correction=False \
+    --verbose=True
     $@
 
