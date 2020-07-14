@@ -11,8 +11,8 @@ NUM_CORE_PER_HOST=8
 GS_ROOT=gs://yyht_source/pretrain
 GS_INIT_CKPT_DIR=${GS_ROOT}/model/B4-4-4H768-ELEC-FULL-TF
 
-task=mnli
-data_dir=${GS_ROOT}/glue/MNLI
+task=cola
+data_dir=${GS_ROOT}/glue/COLA
 
 # task=sts-b
 # data_dir=${GS_ROOT}/data/glue/STS-B
@@ -51,11 +51,11 @@ nohup python classifier.py \
     --init_checkpoint=${init_checkpoint} \
     --model_config=${model_config} \
     --learning_rate=0.00002 \
-    --warmup_steps=676 \
-    --train_steps=6765 \
+    --warmup_steps=534 \
+    --train_steps=5344 \
     --train_batch_size=${bsz} \
-    --iterations=676 \
-    --save_steps=676 \
+    --iterations=534 \
+    --save_steps=534 \
     --do_train=True \
     --do_eval=True \
     --do_submit=True \
