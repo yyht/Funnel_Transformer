@@ -762,7 +762,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training,
   return input_fn
 
 
-def get_model_fn(n_class):
+def get_model_fn(n_class, model_type):
   """Create model function for TPU estimator."""
   def model_fn(features, labels, mode, params):
     """Model computational graph."""
@@ -770,7 +770,7 @@ def get_model_fn(n_class):
     del params
 
     #### Build model
-    model_type = 'official'
+    # model_type = 'official'
     print("==model type==", model_type)
     if model_type == 'official':
       if FLAGS.model_config:
@@ -1109,7 +1109,8 @@ def main(_):
   tf.logging.info("Label list for task %s: %s", FLAGS.task_name, label_list)
 
   # Model function
-  model_fn = get_model_fn(len(label_list))
+  model_type = 'official'
+  model_fn = get_model_fn(len(label_list), model_type)
 
   # TPU Configuration
   run_config = model_utils.get_run_config()
