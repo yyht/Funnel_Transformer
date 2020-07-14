@@ -224,8 +224,8 @@ def dropout_op(tensor, rate, training, *args, **kwargs):
 	# if dropout_name:
 	# 	output = stable_dropout.dropout(tensor, rate, dropout_name)
 	# else:
-	tf.logging.info("****** dropout name: %s, rate: %s"%(dropout_name, str(rate)))
-	if rate is None or rate == 0.0:
+	tf.logging.info("****** dropout name: %s, rate: %s, training: %s"%(dropout_name, str(rate), str(training)))
+	if rate is None or rate == 0.0 or not training:
 		return tensor
 	if training:
 		tf.logging.info("****** dropout *******")
@@ -630,8 +630,8 @@ def seg_id_to_mat(net_config, seg_q, seg_k):
 
 	# Treat [cls] as in the same segment as both A & B
 	cls_mat = tf.logical_or(
-			tf.expand_dims(tf.equal(seg_q, tf.constant([net_config.seg_id_cls])), -1),
-			tf.expand_dims(tf.equal(seg_k, tf.constant([net_config.seg_id_cls])), -2))
+			tf.expand_dims(tf.equal(seg_q, tf.constant([net_config.seg_id_cls], dtype=tf.int32)), -1),
+			tf.expand_dims(tf.equal(seg_k, tf.constant([net_config.seg_id_cls], dtype=tf.int32)), -2))
 	seg_mat = tf.logical_or(cls_mat, seg_mat)
 
 	return seg_mat

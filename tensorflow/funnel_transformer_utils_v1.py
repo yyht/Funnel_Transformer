@@ -117,6 +117,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using tf avg_pool1d")
 		else:
 			pooled = tf_utils.avg_pool1d(
 					pooled,
@@ -124,6 +125,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using my tf avg_pool1d")
 	elif mode == "max":
 		if check_tf_version():
 			pooled = tf.nn.max_pool1d(
@@ -132,6 +134,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using tf max_pool1d")
 		else:
 			pooled = tf_utils.max_pool1d(
 					pooled,
@@ -139,6 +142,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using my tf avg_pool1d")
 	elif mode == "min":
 		if check_tf_version():
 			pooled = -tf.nn.max_pool1d(
@@ -147,6 +151,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using tf min_pool1d")
 		else:
 			pooled = -tf_utils.max_pool1d(
 					-pooled,
@@ -154,6 +159,7 @@ def pool_tensor(net_config, tensor, mode="mean"):
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+			tf.logging.info(" using my tf min_pool1d")
 	else:
 		raise NotImplementedError
 	if ndims == 2: pooled = tf.squeeze(pooled, 2)
