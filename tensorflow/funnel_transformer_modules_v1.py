@@ -209,7 +209,7 @@ def encoder(net_config,
 						hiddens.append(output)
 						prefix = "block_{}/layer_{}/repeat_{}".format(
 								block_idx, layer_idx, repeat_idx)
-						ops.update_ret_dict(ret_dict, layer_dict, prefix)
+						funnel_transformer_ops.update_ret_dict(ret_dict, layer_dict, prefix)
 
 	return output, hiddens, ret_dict
 
@@ -231,7 +231,7 @@ def decoder(net_config,
 	output, bridge_dict = funnel_transformer_utils.bridge_layer(
 			net_config,
 			hiddens, input_mask, reuse=reuse)
-	ops.update_ret_dict(ret_dict, bridge_dict, "bridge")
+	funnel_transformer_ops.update_ret_dict(ret_dict, bridge_dict, "bridge")
 
 	if net_config.decoder_depth == 0:
 		return output, ret_dict
@@ -269,7 +269,7 @@ def decoder(net_config,
 							func_mask=func_mask,
 							name=tfmxl_name)
 
-					ops.update_ret_dict(
+					funnel_transformer_ops.update_ret_dict(
 							ret_dict, layer_dict,
 							"layer_{}/repeat_{}".format(layer_idx, repeat_idx))
 
