@@ -1109,7 +1109,7 @@ def main(_):
   tf.logging.info("Label list for task %s: %s", FLAGS.task_name, label_list)
 
   # Model function
-  model_type = 'official'
+  model_type = 'my'
   model_fn = get_model_fn(len(label_list), model_type)
 
   # TPU Configuration
