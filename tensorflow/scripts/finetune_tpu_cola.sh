@@ -64,6 +64,6 @@ nohup python classifier.py \
     --adam_correction=False \
     --weight_decay=0.01 \
     --verbose=True \
-    --max_seq_length=64
+    --max_seq_length=128
     $@
 
