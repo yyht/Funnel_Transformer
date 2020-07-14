@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-import funnel_transformer_ops
-import tf_utils
+from utils.funnel_transformer import funnel_transformer_ops_v1 as funnel_transformer_ops
+from utils.funnel_transformer import tf_utils
 
 def check_tf_version():
 	version = tf.__version__
@@ -11,6 +11,24 @@ def check_tf_version():
 		return True
 	else:
 		return False
+
+def input_projection(net_config, input_embed, initializer):
+	"""Project input embedding to a proper dimension if needed."""
+	net_config = net_config
+	ret_dict = {}
+
+	output = input_embed
+	if net_config.d_embed != net_config.d_model:
+		tf.logging.info("Project input embedding: %s -> %s",
+										net_config.d_embed, net_config.d_model)
+		output = ops.dense(
+				output,
+				net_config.d_model,
+				inp_shape=net_config.d_embed,
+				initializer=initializer,
+				scope="input_projection")
+
+	return output, ret_dict
 
 def get_embedding_table(net_config, scope="input", dtype=tf.float32):
 	"""Get the corresponding embeeding table."""
@@ -92,50 +110,50 @@ def pool_tensor(net_config, tensor, mode="mean"):
 
 	if ndims == 2: pooled = pooled[:, :, None]
 	if mode == "mean":
-		if not check_tf_version():
-			pooled = tf_utils.avg_pool1d(
-				pooled,
-				ksize=pool_size,
-				strides=pool_size,
-				data_format="NWC",
-				padding="SAME")
-		else:
+		if check_tf_version():
 			pooled = tf.nn.avg_pool1d(
 					pooled,
 					ksize=pool_size,
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
+		else:
+			pooled = tf_utils.avg_pool1d(
+					pooled,
+					ksize=pool_size,
+					strides=pool_size,
+					data_format="NWC",
+					padding="SAME")
 	elif mode == "max":
-		if not check_tf_version():
-			pooled = tf_utils.max_pool1d(
+		if check_tf_version():
+			pooled = tf.nn.max_pool1d(
 					pooled,
 					ksize=pool_size,
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
 		else:
-			pooled = tf.nn.max_pool1d(
-				pooled,
-				ksize=pool_size,
-				strides=pool_size,
-				data_format="NWC",
-				padding="SAME")
+			pooled = tf_utils.max_pool1d(
+					pooled,
+					ksize=pool_size,
+					strides=pool_size,
+					data_format="NWC",
+					padding="SAME")
 	elif mode == "min":
-		if not check_tf_version():
-			pooled = -tf_utils.max_pool1d(
+		if check_tf_version():
+			pooled = -tf.nn.max_pool1d(
 					-pooled,
 					ksize=pool_size,
 					strides=pool_size,
 					data_format="NWC",
 					padding="SAME")
 		else:
-			pooled = -tf.nn.max_pool1d(
-				-pooled,
-				ksize=pool_size,
-				strides=pool_size,
-				data_format="NWC",
-				padding="SAME")
+			pooled = -tf_utils.max_pool1d(
+					-pooled,
+					ksize=pool_size,
+					strides=pool_size,
+					data_format="NWC",
+					padding="SAME")
 	else:
 		raise NotImplementedError
 	if ndims == 2: pooled = tf.squeeze(pooled, 2)
@@ -177,6 +195,53 @@ def rel_shift_pos_enc(net_config, q_len, q_pow, k_len, k_pow, is_training,
 
 	return pos_enc
 
+def init_attn_structures(net_config, attn_structures, 
+					hidden, seg_id, pos_id, is_training, name):
+	"""Initialize extra structures needed for attention."""
+	net_config = net_config
+	if net_config.rel_attn_type == "null":
+		attn_structures = (None, None, None)
+	else:
+		if attn_structures is None:
+			seq_len = tf.shape(hidden)[1]
+
+			if net_config.rel_attn_type == "factorized":
+				if pos_id is None:
+					half_len = tf.cast(seq_len // 2, tf.float32)
+					pos_id = tf.range(-half_len, half_len, 1.0)
+				pos_enc = funnel_transformer_ops.get_pos_enc(
+						pos_id,
+						pos_id,
+						net_config.d_model,
+						net_config.dropout,
+						is_training=is_training,
+						dtype=hidden.dtype,
+						name=name)
+			elif net_config.rel_attn_type == "rel_shift":
+				assert pos_id is None
+				seq_len_fp = tf.cast(seq_len, tf.float32)
+				rel_pos_id = tf.range(seq_len_fp, -seq_len_fp, -1.0)
+				enc = funnel_transformer_ops.get_pos_enc_gpu(
+						rel_pos_id,
+						net_config.d_model,
+						net_config.dropout,
+						is_training=is_training,
+						dtype=hidden.dtype,
+						name=name)
+				shift = 1
+				pos_enc = (enc, shift)
+			else:
+				raise NotImplementedError
+			seg_mat = funnel_transformer_ops.seg_id_to_mat(seg_id, seg_id)
+			num_real_token = seq_len - 1
+			func_mask = tf.pad(
+					tf.ones([num_real_token, num_real_token], dtype=hidden.dtype),
+					[[1, 0], [1, 0]])
+
+			attn_structures = (pos_enc, seg_mat, func_mask)
+			
+	return attn_structures
+
 def pre_attn_pooling(net_config, output, pos_enc, seg_mat, input_mask,
 										 func_mask, block_idx, is_training, name):
 	"""Perform pooling before the attention layer."""
@@ -217,8 +282,7 @@ def pre_attn_pooling(net_config, output, pos_enc, seg_mat, input_mask,
 
 	return output, pos_enc, seg_mat, input_mask, func_mask
 
-def post_attn_pooling(net_config, pos_enc, seg_mat, 
-											input_mask, func_mask,
+def post_attn_pooling(net_config, pos_enc, seg_mat, input_mask, func_mask,
 											block_idx, is_training, name):
 	"""Perform pooling after the attention layer."""
 	net_config = net_config
@@ -233,7 +297,7 @@ def post_attn_pooling(net_config, pos_enc, seg_mat,
 				pos_enc = rel_shift_pos_enc(net_config,
 						q_len=tf.shape(func_mask)[1], q_pow=block_idx,
 						k_len=tf.shape(func_mask)[1], k_pow=block_idx,
-						is_training=is_training, dtype=func_mask.dtype, 
+						is_training=is_training, dtype=func_mask.dtype,
 						name=name)
 			else:
 				raise NotImplementedError
@@ -254,11 +318,11 @@ def upsample(net_config, output, stride, tgt_len):
 		cls_output = output[:, :1]
 		output = output[:, 1:]
 
-	if not check_tf_version():
-		output = tf_utils.repeat(output, repeats=stride, axis=1)
-	else:
+	if check_tf_version():
 		output = tf.repeat(output, repeats=stride, axis=1)
-	
+	else:
+		output = tf_utils.repeat(output, repeats=stride, axis=1)
+
 	if net_config.separate_cls:
 		if net_config.truncate_seq:
 			pad_len = stride - 1
@@ -295,112 +359,46 @@ def bridge_layer(net_config, hiddens, input_mask, reuse=tf.AUTO_REUSE):
 
 	return output, ret_dict
 
-def init_attn_structures(net_config, attn_structures,
-												hidden, seg_id, 
-												pos_id, is_training, name):
-	"""Initialize extra structures needed for attention."""
-	if net_config.rel_attn_type == "null":
-		# attn_structures = (None, None, None)
-		return (None, None, None)
-	else:
-		if attn_structures is None:
-			seq_len = tf.shape(hidden)[1]
+def tfmxl_layer(net_config, q, k, v, pos_enc, seg_mat, attn_mask, 
+								is_training,
+								initializer,
+                func_mask=None, attn_bias=None,
+                name="tfmxl"):
 
-			if net_config.rel_attn_type == "factorized":
-				if pos_id is None:
-					half_len = tf.cast(seq_len // 2, tf.float32)
-					pos_id = tf.range(-half_len, half_len, 1.0)
-				pos_enc = funnel_transformer_ops.get_pos_enc(
-						pos_id,
-						pos_id,
-						net_config.d_model,
-						net_config.dropout,
-						is_training=is_training,
-						dtype=hidden.dtype,
-						name=name)
-			elif net_config.rel_attn_type == "rel_shift":
-				assert pos_id is None
-				seq_len_fp = tf.cast(seq_len, tf.float32)
-				rel_pos_id = tf.range(seq_len_fp, -seq_len_fp, -1.0)
-				enc = funnel_transformer_ops.get_pos_enc_gpu(
-						rel_pos_id,
-						net_config.d_model,
-						net_config.dropout,
-						is_training=is_training,
-						dtype=hidden.dtype,
-						name=name)
-				shift = 1
-				pos_enc = (enc, shift)
-			else:
-				raise NotImplementedError
-			seg_mat = funnel_transformer_ops.seg_id_to_mat(seg_id, seg_id, net_config)
-			num_real_token = seq_len - 1
-			func_mask = tf.pad(
-					tf.ones([num_real_token, num_real_token], dtype=hidden.dtype),
-					[[1, 0], [1, 0]])
+  """Single transformer-xl layer."""
+  net_config = net_config
 
-			return (pos_enc, seg_mat, func_mask)
-		else:
-			return attn_structures
+  ret_dict = {}
+  output, attn_dict = funnel_transformer_ops.rel_multihead_attn(
+      q=q,
+      k=k,
+      v=v,
+      pos_enc=pos_enc,
+      seg_mat=seg_mat,
+      attn_mask=attn_mask,
+      attn_bias=attn_bias,
+      d_model=net_config.d_model,
+      n_head=net_config.n_head,
+      d_head=net_config.d_head,
+      dropout=net_config.dropout,
+      dropatt=net_config.dropatt,
+      is_training=is_training,
+      initializer=initializer,
+      func_mask=func_mask,
+      rel_attn_type=net_config.rel_attn_type,
+      name=name)
 
-def input_projection(net_config, input_embed, initializer):
-	"""Project input embedding to a proper dimension if needed."""
-	ret_dict = {}
+  output, pffn_dict = funnel_transformer_ops.positionwise_ffn(
+      inp=output,
+      d_model=net_config.d_model,
+      d_inner=net_config.d_inner,
+      activation_type=net_config.ff_activation,
+      dropout=net_config.dropout,
+      dropact=net_config.dropact,
+      is_training=is_training,
+      initializer=initializer,
+      name=name)
 
-	output = input_embed
-	if net_config.d_embed != net_config.d_model:
-		tf.logging.info("Project input embedding: %s -> %s",
-										net_config.d_embed, net_config.d_model)
-		output = dense(
-				output,
-				net_config.d_model,
-				inp_shape=net_config.d_embed,
-				initializer=initializer,
-				scope="input_projection")
-
-	return output, ret_dict
-
-def tfmxl_layer(net_config, 
-				q, k, v, pos_enc, seg_mat, attn_mask, 
-				is_training,
-				initializer,
-				func_mask=None, 
-				attn_bias=None,
-				name="tfmxl"):
-
-	"""Single transformer-xl layer."""
-
-	ret_dict = {}
-	output, attn_dict = funnel_transformer_ops.rel_multihead_attn(
-			q=q,
-			k=k,
-			v=v,
-			pos_enc=pos_enc,
-			seg_mat=seg_mat,
-			attn_mask=attn_mask,
-			attn_bias=attn_bias,
-			d_model=net_config.d_model,
-			n_head=net_config.n_head,
-			d_head=net_config.d_head,
-			dropout=net_config.dropout,
-			dropatt=net_config.dropatt,
-			is_training=is_training,
-			initializer=initializer,
-			func_mask=func_mask,
-			rel_attn_type=net_config.rel_attn_type,
-			name=name)
-
-	output, pffn_dict = funnel_transformer_ops.positionwise_ffn(
-			inp=output,
-			d_model=net_config.d_model,
-			d_inner=net_config.d_inner,
-			activation_type=net_config.ff_activation,
-			dropout=net_config.dropout,
-			dropact=net_config.dropact,
-			is_training=is_training,
-			initializer=initializer,
-			name=name)
-
-	funnel_transformer_ops.update_ret_dict(ret_dict, attn_dict, "attn")
-	funnel_transformer_ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
-	return output, ret_dict
+  ops.update_ret_dict(ret_dict, attn_dict, "attn")
+  ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
+  return output, ret_dict

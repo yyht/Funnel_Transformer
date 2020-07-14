@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
 import copy
-import funnel_transformer_modules
-import funnel_transformer_utils
-import funnel_transformer_ops
+import funnel_transformer_modules_v1 as funnel_transformer_modules
+import funnel_transformer_utils_v1 as funnel_transformer_utils
+import funnel_transformer_ops_v1 as funnel_transformer_ops
 
 import numpy as np
 import tensorflow as tf

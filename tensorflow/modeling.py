@@ -634,7 +634,7 @@ class FunnelTFM(object):
             [[1, 0], [1, 0]])
 
         self.attn_structures = (pos_enc, seg_mat, func_mask)
-
+        
     return self.attn_structures
 
   def pre_attn_pooling(self, output, pos_enc, seg_mat, input_mask,
