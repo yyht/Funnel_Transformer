@@ -332,7 +332,7 @@ class FunnelTFM(object):
 										 seg_id=None, input_mask=None, start_positions=None,
 										 use_tpu=False, use_bfloat16=False,
 										 conditional_end=True,
-										 use_masked_loss=False,
+										 use_masked_loss=True,
 										 use_answer_class=True):
 		"""SQuAD loss."""
 		if is_training:
