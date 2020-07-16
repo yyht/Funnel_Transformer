@@ -328,5 +328,195 @@ class FunnelTFM(object):
 				per_example_loss = -tf.reduce_sum(tf.nn.log_softmax(logits) * one_hot_labels, -1)
 				return per_example_loss, logits
 
+	def get_squad_loss(self, inputs, cls_index, para_mask, is_training,
+										 seg_id=None, input_mask=None, start_positions=None,
+										 use_tpu=False, use_bfloat16=False,
+										 conditional_end=True,
+										 use_masked_loss=False,
+										 use_answer_class=True):
+		"""SQuAD loss."""
+		if is_training:
+			dropout_prob = self.config.dropout
+			dropatt = self.config.dropatt
+		else:
+			dropout_prob = 0.0
+			dropatt = 0.0
+
+		initializer = get_initializer(self.config)
+		dtype = tf.float32 if not use_bfloat16 else tf.bfloat16
+
+		self.build_embedder(inputs, seg_id, 
+									dropout_prob, 
+									dropatt,
+									use_bfloat16,
+									is_training,
+									use_tpu)
+
+		self.build_encoder(inputs, input_mask, 
+									seg_id,
+									dropout_prob, 
+									dropatt,
+									is_training,
+									use_bfloat16,
+									embedding_output=None,
+									use_tpu=use_tpu)
+
+		# Decoding
+		self.build_decoder(self.encoder_hiddens, 
+											input_ids, 
+											input_mask, 
+											seg_id, is_training)
+
+		seq_len = tf.shape(inputs)[1]
+		output = tf.identity(self.decoder_output)
+
+		with tf.variable_scope("start_logits"):
+			# [B x L x D] -> [B x L x 1]
+			start_logits = funnel_transformer_ops.dense(
+					output,
+					1,
+					initializer=initializer)
+			# [B x L x 1] -> [B x L]
+			start_logits = tf.squeeze(start_logits, -1)
+			start_logits_masked = start_logits * (1 - para_mask) - 1e30 * para_mask
+			# [B x L]
+			start_log_probs = tf.nn.log_softmax(
+					tf.cast(start_logits_masked, tf.float32), -1)
+
+		with tf.variable_scope("end_logits"):
+			if conditional_end:
+				if is_training:
+					assert start_positions is not None
+					start_index = tf.one_hot(start_positions, depth=seq_len, axis=-1,
+																	 dtype=output.dtype)
+					start_features = tf.einsum("blh,bl->bh", output, start_index)
+					start_features = tf.tile(start_features[:, None], [1, seq_len, 1])
+					end_logits = funnel_transformer_ops.dense(
+							tf.concat([output, start_features], axis=-1),
+							net_config.d_model,
+							initializer=initializer,
+							activation=tf.tanh,
+							scope="dense_0")
+					end_logits = ops.layer_norm_op(end_logits, begin_norm_axis=-1)
+
+					end_logits = ops.dense(
+							end_logits, 1,
+							initializer=initializer,
+							scope="dense_1")
+					end_logits = tf.squeeze(end_logits, -1)
+					end_logits_masked = end_logits * (1 - para_mask) - 1e30 * para_mask
+					# [B x L]
+					end_log_probs = tf.nn.log_softmax(
+							tf.cast(end_logits_masked, tf.float32), -1)
+				else:
+					start_top_log_probs, start_top_index = tf.nn.top_k(
+							start_log_probs, k=FLAGS.start_n_top)
+					start_index = tf.one_hot(start_top_index,
+																	 depth=seq_len, axis=-1, dtype=output.dtype)
+					# [B x L x D] + [B x K x L] -> [B x K x D]
+					start_features = tf.einsum("blh,bkl->bkh", output, start_index)
+					# [B x L x D] -> [B x 1 x L x D] -> [B x K x L x D]
+					end_input = tf.tile(output[:, None],
+															[1, FLAGS.start_n_top, 1, 1])
+					# [B x K x D] -> [B x K x 1 x D] -> [B x K x L x D]
+					start_features = tf.tile(start_features[:, :, None],
+																	 [1, 1, seq_len, 1])
+					# [B x K x L x 2D]
+					end_input = tf.concat([end_input, start_features], axis=-1)
+					end_logits = funnel_transformer_ops.dense(
+							end_input,
+							net_config.d_model,
+							initializer=initializer,
+							activation=tf.tanh,
+							scope="dense_0")
+					end_logits = funnel_transformer_ops.layer_norm_op(end_logits, 
+											begin_norm_axis=-1)
+					# [B x K x L x 1]
+					end_logits = funnel_transformer_ops.dense(
+							end_logits,
+							1,
+							initializer=initializer,
+							scope="dense_1")
+
+					# [B x K x L]
+					end_logits = tf.squeeze(end_logits, -1)
+					if use_masked_loss:
+						end_logits_masked = end_logits * (
+								1 - para_mask[:, None]) - 1e30 * para_mask[:, None]
+					else:
+						end_logits_masked = end_logits
+					# [B x K x L]
+					end_log_probs = tf.nn.log_softmax(
+							tf.cast(end_logits_masked, tf.float32), -1)
+					# [B x K x K']
+					end_top_log_probs, end_top_index = tf.nn.top_k(
+							end_log_probs, k=FLAGS.end_n_top)
+					# [B x K*K']
+					end_top_log_probs = tf.reshape(
+							end_top_log_probs,
+							[-1, FLAGS.start_n_top * FLAGS.end_n_top])
+					end_top_index = tf.reshape(
+							end_top_index,
+							[-1, FLAGS.start_n_top * FLAGS.end_n_top])
+			else:
+				end_logits = funnel_transformer_ops.dense(
+						output,
+						1,
+						initializer=initializer)
+				end_logits = tf.squeeze(end_logits, -1)
+				end_logits_masked = end_logits * (1 - para_mask) - 1e30 * para_mask
+				end_log_probs = tf.nn.log_softmax(
+						tf.cast(end_logits_masked, tf.float32), -1)
+				if not is_training:
+					start_top_log_probs, start_top_index = tf.nn.top_k(
+							start_log_probs, k=FLAGS.start_n_top)
+					end_top_log_probs, end_top_index = tf.nn.top_k(
+							end_log_probs, k=FLAGS.end_n_top)
+
+		return_dict = {}
+		if is_training:
+			return_dict["start_log_probs"] = start_log_probs
+			return_dict["end_log_probs"] = end_log_probs
+		else:
+			return_dict["start_top_log_probs"] = start_top_log_probs
+			return_dict["start_top_index"] = start_top_index
+			return_dict["end_top_log_probs"] = end_top_log_probs
+			return_dict["end_top_index"] = end_top_index
+
+		if use_answer_class:
+			with tf.variable_scope("answer_class"):
+				cls_index = tf.one_hot(cls_index, seq_len, axis=-1, dtype=output.dtype)
+				cls_feature = tf.einsum("blh,bl->bh", output, cls_index)
+
+				start_p = tf.nn.softmax(start_logits_masked, axis=-1,
+																name="softmax_start")
+				start_feature = tf.einsum("blh,bl->bh", output, start_p)
+
+				ans_feature = tf.concat([start_feature, cls_feature], -1)
+				ans_feature = funnel_transformer_ops.dense(
+						ans_feature,
+						self.config.d_model,
+						activation=tf.tanh,
+						initializer=initializer,
+						scope="dense_0")
+				ans_feature = funnel_transformer_ops.dropout_op(ans_feature, net_config.dropout,
+																		 training=is_training)
+				cls_logits = funnel_transformer_ops.dense(
+						ans_feature,
+						1,
+						initializer=initializer,
+						scope="dense_1",
+						use_bias=False)
+				cls_logits = tf.squeeze(cls_logits, -1)
+
+				return_dict["cls_logits"] = tf.cast(cls_logits, tf.float32)
+		else:
+			cls_index = tf.one_hot(cls_index, seq_len, axis=-1, dtype=tf.float32)
+			cls_logits = tf.einsum("bl,bl->b", start_log_probs, cls_index)
+
+			return_dict["cls_logits"] = tf.cast(cls_logits, tf.float32)
+
+		return return_dict
+
 	
 	

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # (1) Down load the raw data to some local dir
-data_dir=
+GS_ROOT=gs://yyht_source/pretrain
+data_dir=/home/htxu91/squad
 
 mkdir -p ${data_dir}
 cd ${data_dir}
@@ -20,13 +21,13 @@ fi
 cd -
 
 # (2) Specific the tokenizer path (local or GS)
-pretrain_dir=
+pretrain_dir=${GS_ROOT}/model/B4-4-4H768-ELEC-FULL-TF
 uncased=True
 tokenizer_type=word_piece
 tokenizer_path=${pretrain_dir}/vocab.uncased.txt
 
 # (3) Set up google storage to save processed data
-GS_ROOT=
+
 GS_PROC_DATA_DIR=${GS_ROOT}/proc_data/squad
 
 for split in train eval; do
