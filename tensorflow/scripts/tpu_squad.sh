@@ -43,5 +43,5 @@ nohup python squad.py \
     --train_batch_size=48 \
     --eval_batch_size=8 \
     --do_train=True \
-    --do_predict=True
+    --do_eval=True
     $@
