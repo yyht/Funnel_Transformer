@@ -10,7 +10,7 @@ GS_ROOT=gs://yyht_source/pretrain
 GS_INIT_CKPT_DIR=${GS_ROOT}/model/B4-4-4H768-ELEC-FULL-TF
 
 GS_PROC_DATA_DIR=${GS_ROOT}/proc_data/squad
-GS_MODEL_DIR=${GS_ROOT}/proc_data/squad/
+GS_MODEL_DIR=${GS_ROOT}/proc_data/squad/official
 
 uncased=True
 tokenizer_type=word_piece
@@ -18,7 +18,7 @@ tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
 init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt
 model_config=${GS_INIT_CKPT_DIR}/net_config.json
 
-python squad.py \
+python3 squad.py \
     --use_tpu=True \
     --tpu=${TPU_NAME} \
     --use_bfloat16=True \
