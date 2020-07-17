@@ -1,4 +1,3 @@
-"""Finetune for squad."""
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
@@ -32,12 +31,22 @@ import squad_utils_v1
 import squad_utils_v2
 import tokenization
 
+def convert_to_unicode(inputs):
+  if not isinstance(inputs, unicode):
+    try:
+      inputs = inputs.decode('utf-8')
+    except UnicodeDecodeError:
+      inputs = inputs.decode('gbk', 'ignore')
+  return inputs
+
 logger = tf.get_logger()
 logger.propagate = False
 tf.disable_v2_behavior()
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
-
-SPIECE_UNDERLINE = "▁"
+SPIECE_UNDERLINE = u"▁"
 
 
 # Preprocessing
