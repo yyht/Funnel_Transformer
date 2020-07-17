@@ -397,9 +397,9 @@ class FunnelTFM(object):
 							initializer=initializer,
 							activation=tf.tanh,
 							scope="dense_0")
-					end_logits = ops.layer_norm_op(end_logits, begin_norm_axis=-1)
+					end_logits = funnel_transformer_ops.layer_norm_op(end_logits, begin_norm_axis=-1)
 
-					end_logits = ops.dense(
+					end_logits = funnel_transformer_ops.dense(
 							end_logits, 1,
 							initializer=initializer,
 							scope="dense_1")

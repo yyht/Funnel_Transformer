@@ -601,6 +601,7 @@ class FunnelTFM(object):
     else:
       if self.attn_structures is None:
         seq_len = tf.shape(hidden)[1]
+        print("==use new attention structures==")
 
         if net_config.rel_attn_type == "factorized":
           if pos_id is None:
