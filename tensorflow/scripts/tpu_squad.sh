@@ -26,7 +26,7 @@ nohup python3 squad.py \
     --num_core_per_host=${NUM_CORE_PER_HOST} \
     --output_dir=${GS_PROC_DATA_DIR} \
     --model_dir=${GS_MODEL_DIR} \
-    --predict_dir=${GS_MODeL_DIR}/prediction \
+    --predict_dir=${GS_MODEL_DIR}/prediction \
     --init_checkpoint=${init_checkpoint} \
     --model_config=${model_config} \
     --uncased=${uncased} \
@@ -43,5 +43,5 @@ nohup python3 squad.py \
     --train_batch_size=48 \
     --eval_batch_size=8 \
     --do_train=True \
-    --do_predict=True \
+    --do_predict=True
     $@
