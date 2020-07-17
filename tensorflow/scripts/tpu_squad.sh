@@ -10,7 +10,7 @@ GS_ROOT=gs://yyht_source/pretrain
 GS_INIT_CKPT_DIR=${GS_ROOT}/model/B4-4-4H768-ELEC-FULL-TF
 
 GS_PROC_DATA_DIR=${GS_ROOT}/proc_data/squad
-GS_MODEL_DIR=${GS_ROOT}/proc_data/squad/my
+GS_MODEL_DIR=${GS_ROOT}/proc_data/squad/official
 
 uncased=True
 tokenizer_type=word_piece
