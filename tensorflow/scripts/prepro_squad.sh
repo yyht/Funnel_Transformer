@@ -31,7 +31,7 @@ tokenizer_path=${pretrain_dir}/vocab.uncased.txt
 GS_PROC_DATA_DIR=${GS_ROOT}/proc_data/squad
 
 for split in train eval; do
-  python3 squad.py \
+  python squad.py \
     --output_dir=${GS_PROC_DATA_DIR} \
     --train_version="v2" \
     --train_file=${data_dir}/train-v2.0.json \

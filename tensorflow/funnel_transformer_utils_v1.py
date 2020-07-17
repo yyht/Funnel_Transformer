@@ -210,6 +210,7 @@ def init_attn_structures(net_config, attn_structures,
 	else:
 		if attn_structures is None:
 			seq_len = tf.shape(hidden)[1]
+			print("==use new attention structures==")
 
 			if net_config.rel_attn_type == "factorized":
 				if pos_id is None:
@@ -368,44 +369,44 @@ def bridge_layer(net_config, hiddens, input_mask, reuse=tf.AUTO_REUSE):
 def tfmxl_layer(net_config, q, k, v, pos_enc, seg_mat, attn_mask, 
 								is_training,
 								initializer,
-                func_mask=None, attn_bias=None,
-                name="tfmxl"):
+								func_mask=None, attn_bias=None,
+								name="tfmxl"):
 
-  """Single transformer-xl layer."""
-  net_config = net_config
+	"""Single transformer-xl layer."""
+	net_config = net_config
 
-  ret_dict = {}
-  output, attn_dict = funnel_transformer_ops.rel_multihead_attn(
-  		net_config=net_config,
-      q=q,
-      k=k,
-      v=v,
-      pos_enc=pos_enc,
-      seg_mat=seg_mat,
-      attn_mask=attn_mask,
-      attn_bias=attn_bias,
-      d_model=net_config.d_model,
-      n_head=net_config.n_head,
-      d_head=net_config.d_head,
-      dropout=net_config.dropout,
-      dropatt=net_config.dropatt,
-      is_training=is_training,
-      initializer=initializer,
-      func_mask=func_mask,
-      rel_attn_type=net_config.rel_attn_type,
-      name=name)
+	ret_dict = {}
+	output, attn_dict = funnel_transformer_ops.rel_multihead_attn(
+			net_config=net_config,
+			q=q,
+			k=k,
+			v=v,
+			pos_enc=pos_enc,
+			seg_mat=seg_mat,
+			attn_mask=attn_mask,
+			attn_bias=attn_bias,
+			d_model=net_config.d_model,
+			n_head=net_config.n_head,
+			d_head=net_config.d_head,
+			dropout=net_config.dropout,
+			dropatt=net_config.dropatt,
+			is_training=is_training,
+			initializer=initializer,
+			func_mask=func_mask,
+			rel_attn_type=net_config.rel_attn_type,
+			name=name)
 
-  output, pffn_dict = funnel_transformer_ops.positionwise_ffn(
-      inp=output,
-      d_model=net_config.d_model,
-      d_inner=net_config.d_inner,
-      activation_type=net_config.ff_activation,
-      dropout=net_config.dropout,
-      dropact=net_config.dropact,
-      is_training=is_training,
-      initializer=initializer,
-      name=name)
+	output, pffn_dict = funnel_transformer_ops.positionwise_ffn(
+			inp=output,
+			d_model=net_config.d_model,
+			d_inner=net_config.d_inner,
+			activation_type=net_config.ff_activation,
+			dropout=net_config.dropout,
+			dropact=net_config.dropact,
+			is_training=is_training,
+			initializer=initializer,
+			name=name)
 
-  funnel_transformer_ops.update_ret_dict(ret_dict, attn_dict, "attn")
-  funnel_transformer_ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
-  return output, ret_dict
+	funnel_transformer_ops.update_ret_dict(ret_dict, attn_dict, "attn")
+	funnel_transformer_ops.update_ret_dict(ret_dict, pffn_dict, "pffn")
+	return output, ret_dict
