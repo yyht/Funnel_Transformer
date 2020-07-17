@@ -18,7 +18,7 @@ tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
 init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt
 model_config=${GS_INIT_CKPT_DIR}/net_config.json
 
-nohup python3 squad.py \
+nohup python squad.py \
     --use_tpu=True \
     --tpu=${TPU_NAME} \
     --use_bfloat16=True \
