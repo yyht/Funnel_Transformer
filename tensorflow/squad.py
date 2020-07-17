@@ -25,6 +25,7 @@ else:
 
 import data_utils
 import modeling
+import my_modeling
 import model_utils
 import optimization
 import squad_utils_v1
@@ -1117,7 +1118,7 @@ def input_fn_builder(input_glob, seq_length, is_training, drop_remainder,
   return input_fn
 
 
-def get_model_fn():
+def get_model_fn(model_type):
   """Create model function for TPU estimator."""
   def model_fn(features, labels, mode, params):
     """Model computational graph."""
@@ -1125,12 +1126,17 @@ def get_model_fn():
     del params
 
     #### Build model
-    if FLAGS.model_config:
-      net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
-    else:
-      net_config = modeling.ModelConfig.init_from_flags()
-    net_config.to_json(os.path.join(FLAGS.model_dir, "net_config.json"))
-    model = modeling.FunnelTFM(net_config)
+    print("==model type==", model_type)
+    if model_type == 'official':
+      if FLAGS.model_config:
+        net_config = modeling.ModelConfig.init_from_json(FLAGS.model_config)
+      else:
+        net_config = modeling.ModelConfig.init_from_flags()
+      net_config.to_json(os.path.join(FLAGS.model_dir, "net_config.json"))
+      model = modeling.FunnelTFM(net_config)
+    elif model_type == 'my':
+      net_config_path = os.path.join(FLAGS.model_dir, "net_config_base_my.json")
+      model = my_modeling.FunnelTFM(net_config_path)
 
     #### Training or Evaluation
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
@@ -1149,12 +1155,17 @@ def get_model_fn():
         start_positions = tf.reshape(features["start_positions"], [-1])
       else:
         start_positions = None
-
-      with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
-        outputs = model.get_squad_loss(
-            inputs, cls_index, para_mask, is_training, seg_id=seg_id,
-            input_mask=input_mask, start_positions=start_positions,
-            use_tpu=FLAGS.use_tpu, use_bfloat16=FLAGS.use_bfloat16)
+      if model_type == 'official':
+        with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
+          outputs = model.get_squad_loss(
+              inputs, cls_index, para_mask, is_training, seg_id=seg_id,
+              input_mask=input_mask, start_positions=start_positions,
+              use_tpu=FLAGS.use_tpu, use_bfloat16=FLAGS.use_bfloat16)
+      elif model_type == 'my':
+          outputs = model.get_squad_loss(
+              inputs, cls_index, para_mask, is_training, seg_id=seg_id,
+              input_mask=input_mask, start_positions=start_positions,
+              use_tpu=FLAGS.use_tpu, use_bfloat16=FLAGS.use_bfloat16)
 
       return outputs
 
@@ -1377,7 +1388,8 @@ def main(_):
     tf.io.gfile.makedirs(FLAGS.predict_dir)
 
   # Model function
-  model_fn = get_model_fn()
+  model_type = 'official'
+  model_fn = get_model_fn(model_type)
 
   # TPU Configuration
   run_config = model_utils.get_run_config()
