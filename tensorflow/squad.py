@@ -37,7 +37,7 @@ logger.propagate = False
 tf.disable_v2_behavior()
 
 
-SPIECE_UNDERLINE = u"▁"
+SPIECE_UNDERLINE = "▁"
 
 
 # Preprocessing
