@@ -18,6 +18,8 @@ tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
 init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt
 model_config=${GS_INIT_CKPT_DIR}/net_config.json
 
+data_dir=/home/htxu91/squad
+
 nohup python squad.py \
     --use_tpu=True \
     --tpu=${TPU_NAME} \
@@ -27,6 +29,7 @@ nohup python squad.py \
     --output_dir=${GS_PROC_DATA_DIR} \
     --model_dir=${GS_MODEL_DIR} \
     --predict_dir=${GS_MODEL_DIR}/prediction \
+    --predict_file=${data_dir}/dev-v2.0.json \
     --init_checkpoint=${init_checkpoint} \
     --model_config=${model_config} \
     --uncased=${uncased} \
@@ -43,5 +46,5 @@ nohup python squad.py \
     --train_batch_size=48 \
     --eval_batch_size=8 \
     --do_train=True \
-    --do_eval=True
+    --do_predict=True
     $@
