@@ -19,24 +19,24 @@ def parse_depth_string(depth_str):
 
 		return list(map(int, depth_config))
 
-def get_initializer(self.config):
+def get_initializer(net_config):
 		"""Get variable intializer."""
-		self.config = self.config
-		if self.config.init == "uniform":
+		net_config = net_config
+		if net_config.init == "uniform":
 			initializer = tf.initializers.random_uniform(
-					minval=-self.config.init_range,
-					maxval=self.config.init_range,
+					minval=-net_config.init_range,
+					maxval=net_config.init_range,
 					seed=None)
-		elif self.config.init == "normal":
+		elif net_config.init == "normal":
 			initializer = tf.initializers.random_normal(
-					stddev=self.config.init_std,
+					stddev=net_config.init_std,
 					seed=None)
-		elif self.config.init == "truncated_normal":
+		elif net_config.init == "truncated_normal":
 			initializer = tf.initializers.truncated_normal(
-					stddev=self.config.init_std,
+					stddev=net_config.init_std,
 					seed=None)
 		else:
-			raise ValueError("Initializer {} not supported".format(self.config.init))
+			raise ValueError("Initializer {} not supported".format(net_config.init))
 		return initializer
 
 class FunnelTFM(object):
@@ -499,7 +499,7 @@ class FunnelTFM(object):
 						activation=tf.tanh,
 						initializer=initializer,
 						scope="dense_0")
-				ans_feature = funnel_transformer_ops.dropout_op(ans_feature, self.config.dropout,
+				ans_feature = funnel_transformer_ops.dropout_op(ans_feature, dropout_prob,
 																		 training=is_training)
 				cls_logits = funnel_transformer_ops.dense(
 						ans_feature,
