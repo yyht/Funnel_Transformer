@@ -334,7 +334,8 @@ class FunnelTFM(object):
 										 conditional_end=True,
 										 use_masked_loss=True,
 										 use_answer_class=True,
-										 start_n_top=5):
+										 start_n_top=5,
+										 end_n_top=5):
 		"""SQuAD loss."""
 		if is_training:
 			dropout_prob = self.config.dropout
@@ -418,7 +419,7 @@ class FunnelTFM(object):
 					start_features = tf.einsum("blh,bkl->bkh", output, start_index)
 					# [B x L x D] -> [B x 1 x L x D] -> [B x K x L x D]
 					end_input = tf.tile(output[:, None],
-															[1, FLAGS.start_n_top, 1, 1])
+															[1, start_n_top, 1, 1])
 					# [B x K x D] -> [B x K x 1 x D] -> [B x K x L x D]
 					start_features = tf.tile(start_features[:, :, None],
 																	 [1, 1, seq_len, 1])
@@ -451,14 +452,14 @@ class FunnelTFM(object):
 							tf.cast(end_logits_masked, tf.float32), -1)
 					# [B x K x K']
 					end_top_log_probs, end_top_index = tf.nn.top_k(
-							end_log_probs, k=FLAGS.end_n_top)
+							end_log_probs, k=end_n_top)
 					# [B x K*K']
 					end_top_log_probs = tf.reshape(
 							end_top_log_probs,
-							[-1, FLAGS.start_n_top * FLAGS.end_n_top])
+							[-1, start_n_top * end_n_top])
 					end_top_index = tf.reshape(
 							end_top_index,
-							[-1, FLAGS.start_n_top * FLAGS.end_n_top])
+							[-1, start_n_top * end_n_top])
 			else:
 				end_logits = funnel_transformer_ops.dense(
 						output,
@@ -470,9 +471,9 @@ class FunnelTFM(object):
 						tf.cast(end_logits_masked, tf.float32), -1)
 				if not is_training:
 					start_top_log_probs, start_top_index = tf.nn.top_k(
-							start_log_probs, k=FLAGS.start_n_top)
+							start_log_probs, k=start_n_top)
 					end_top_log_probs, end_top_index = tf.nn.top_k(
-							end_log_probs, k=FLAGS.end_n_top)
+							end_log_probs, k=end_n_top)
 
 		return_dict = {}
 		if is_training:
