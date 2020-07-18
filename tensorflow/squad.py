@@ -1397,7 +1397,7 @@ def main(_):
     tf.io.gfile.makedirs(FLAGS.predict_dir)
 
   # Model function
-  model_type = 'official'
+  model_type = 'my'
   model_fn = get_model_fn(model_type)
 
   # TPU Configuration
