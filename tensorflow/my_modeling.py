@@ -333,7 +333,8 @@ class FunnelTFM(object):
 										 use_tpu=False, use_bfloat16=False,
 										 conditional_end=True,
 										 use_masked_loss=True,
-										 use_answer_class=True):
+										 use_answer_class=True,
+										 start_n_top=5):
 		"""SQuAD loss."""
 		if is_training:
 			dropout_prob = self.config.dropout
@@ -410,7 +411,7 @@ class FunnelTFM(object):
 							tf.cast(end_logits_masked, tf.float32), -1)
 				else:
 					start_top_log_probs, start_top_index = tf.nn.top_k(
-							start_log_probs, k=FLAGS.start_n_top)
+							start_log_probs, k=start_n_top)
 					start_index = tf.one_hot(start_top_index,
 																	 depth=seq_len, axis=-1, dtype=output.dtype)
 					# [B x L x D] + [B x K x L] -> [B x K x D]
