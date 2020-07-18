@@ -19,24 +19,24 @@ def parse_depth_string(depth_str):
 
 		return list(map(int, depth_config))
 
-def get_initializer(net_config):
+def get_initializer(self.config):
 		"""Get variable intializer."""
-		net_config = net_config
-		if net_config.init == "uniform":
+		self.config = self.config
+		if self.config.init == "uniform":
 			initializer = tf.initializers.random_uniform(
-					minval=-net_config.init_range,
-					maxval=net_config.init_range,
+					minval=-self.config.init_range,
+					maxval=self.config.init_range,
 					seed=None)
-		elif net_config.init == "normal":
+		elif self.config.init == "normal":
 			initializer = tf.initializers.random_normal(
-					stddev=net_config.init_std,
+					stddev=self.config.init_std,
 					seed=None)
-		elif net_config.init == "truncated_normal":
+		elif self.config.init == "truncated_normal":
 			initializer = tf.initializers.truncated_normal(
-					stddev=net_config.init_std,
+					stddev=self.config.init_std,
 					seed=None)
 		else:
-			raise ValueError("Initializer {} not supported".format(net_config.init))
+			raise ValueError("Initializer {} not supported".format(self.config.init))
 		return initializer
 
 class FunnelTFM(object):
@@ -393,7 +393,7 @@ class FunnelTFM(object):
 					start_features = tf.tile(start_features[:, None], [1, seq_len, 1])
 					end_logits = funnel_transformer_ops.dense(
 							tf.concat([output, start_features], axis=-1),
-							net_config.d_model,
+							self.config.d_model,
 							initializer=initializer,
 							activation=tf.tanh,
 							scope="dense_0")
@@ -425,7 +425,7 @@ class FunnelTFM(object):
 					end_input = tf.concat([end_input, start_features], axis=-1)
 					end_logits = funnel_transformer_ops.dense(
 							end_input,
-							net_config.d_model,
+							self.config.d_model,
 							initializer=initializer,
 							activation=tf.tanh,
 							scope="dense_0")
@@ -499,7 +499,7 @@ class FunnelTFM(object):
 						activation=tf.tanh,
 						initializer=initializer,
 						scope="dense_0")
-				ans_feature = funnel_transformer_ops.dropout_op(ans_feature, net_config.dropout,
+				ans_feature = funnel_transformer_ops.dropout_op(ans_feature, self.config.dropout,
 																		 training=is_training)
 				cls_logits = funnel_transformer_ops.dense(
 						ans_feature,
