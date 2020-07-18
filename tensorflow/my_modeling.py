@@ -363,7 +363,7 @@ class FunnelTFM(object):
 
 		# Decoding
 		self.build_decoder(self.encoder_hiddens, 
-											input_ids, 
+											inputs, 
 											input_mask, 
 											seg_id, is_training)
 
