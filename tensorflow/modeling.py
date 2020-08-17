@@ -30,6 +30,9 @@ flags.DEFINE_string("pretrain_loss", default="ae",
 flags.DEFINE_string("denoise_mode", default="denoise",
                     help="Comma separated keys to indicate model configs that "
                     "will always be overwritten by the FLAGS values.")
+flags.DEFINE_bool("use_bfloat16", default=False,
+                    help="Comma separated keys to indicate model configs that "
+                    "will always be overwritten by the FLAGS values.")
 
 # Size
 flags.DEFINE_string("block_size", default="3_3_3",
@@ -102,7 +105,7 @@ class ModelConfig(object):
           "init", "init_std", "init_range", "rel_attn_type", "separate_cls",
           "pooling_type", "pooling_size", "pool_q_only", "decoder_size",
           "if_skip_connetion", "pretrain_loss", "corrupted",
-          "denoise_mode"]
+          "denoise_mode", 'use_bfloat16']
 
   def __init__(self, block_size, vocab_size, d_embed, d_model, n_head,
                d_head, d_inner, dropout, dropatt, dropact, ff_activation,
@@ -113,7 +116,8 @@ class ModelConfig(object):
                if_skip_connetion=False,
                 pretrain_loss="ae",
                 corrupted=False,
-                denoise_mode="denoise"):
+                denoise_mode="denoise",
+                use_bfloat16=False):
 
     """Initialize model config."""
     assert vocab_size == FLAGS.vocab_size, "Vocabulary size does not match."
@@ -122,6 +126,7 @@ class ModelConfig(object):
     self.if_skip_connetion = if_skip_connetion
     self.corrupted = corrupted
     self.denoise_mode = denoise_mode
+    self.use_bfloat16 = use_bfloat16
     self.d_embed = d_embed
     self.d_model = d_model
     self.n_head = n_head
