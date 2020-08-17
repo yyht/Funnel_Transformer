@@ -148,6 +148,7 @@ class ModelConfig(object):
     self.d_head = d_head
     self.d_inner = d_inner
     self.hidden_size = self.d_model
+    self.seg_id_cls = seg_id_cls
 
     self.dropout = dropout
     self.dropatt = dropatt
