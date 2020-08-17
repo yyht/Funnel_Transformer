@@ -30,9 +30,6 @@ flags.DEFINE_string("pretrain_loss", default="ae",
 flags.DEFINE_string("denoise_mode", default="denoise",
                     help="Comma separated keys to indicate model configs that "
                     "will always be overwritten by the FLAGS values.")
-flags.DEFINE_bool("use_bfloat16", default=False,
-                    help="Comma separated keys to indicate model configs that "
-                    "will always be overwritten by the FLAGS values.")
 
 # Size
 flags.DEFINE_string("block_size", default="3_3_3",
