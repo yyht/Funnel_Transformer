@@ -58,6 +58,8 @@ flags.DEFINE_float("dropact", default=0.0,
 
 flags.DEFINE_string("ff_activation", default="gelu",
                     help="Activation type used in position-wise feed-forward.")
+flags.DEFINE_string("hidden_act", default="gelu",
+                    help="Activation type used in position-wise feed-forward.")
 flags.DEFINE_string("rel_attn_type", default="factorized",
                     help="Type of the relative attention.")
 
@@ -106,7 +108,8 @@ class ModelConfig(object):
           "pooling_type", "pooling_size", "pool_q_only", "decoder_size",
           "if_skip_connetion", "pretrain_loss", "corrupted",
           "denoise_mode", 'use_bfloat16', "verbose", "truncate_seq",
-          "seg_id_cls", "scope", "hidden_size", 'initializer_range']
+          "seg_id_cls", "scope", "hidden_size", 'initializer_range',
+          "hidden_act"]
 
   def __init__(self, block_size, vocab_size, d_embed, d_model, n_head,
                d_head, d_inner, dropout, dropatt, dropact, ff_activation,
@@ -124,7 +127,8 @@ class ModelConfig(object):
                 seg_id_cls=2,
                 scope="model", 
                 hidden_size=768,
-                initializer_range=0.01):
+                initializer_range=0.01,
+                hidden_act='gelu'):
 
     """Initialize model config."""
     assert vocab_size == FLAGS.vocab_size, "Vocabulary size does not match."
@@ -149,6 +153,7 @@ class ModelConfig(object):
     self.dropact = dropact
 
     self.ff_activation = ff_activation
+    self.hidden_act = ff_activation
     self.init = init
     self.init_std = init_std
     self.init_range = init_range
