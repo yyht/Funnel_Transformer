@@ -44,7 +44,10 @@ flags.DEFINE_integer("d_head", default=64,
                      help="Dimension of each attention head.")
 flags.DEFINE_integer("d_inner", default=2048,
                      help="Dimension of inner hidden size in FFN.")
-
+flags.DEFINE_integer("hidden_size", default=512,
+                     help="Dimension of inner hidden size in FFN.")
+flags.DEFINE_float("initializer_range", default=0.02,
+                     help="Dimension of inner hidden size in FFN.")
 # Dropouts
 flags.DEFINE_float("dropout", default=0.1,
                    help="Model dropout.")
@@ -103,7 +106,7 @@ class ModelConfig(object):
           "pooling_type", "pooling_size", "pool_q_only", "decoder_size",
           "if_skip_connetion", "pretrain_loss", "corrupted",
           "denoise_mode", 'use_bfloat16', "verbose", "truncate_seq",
-          "seg_id_cls", "scope"]
+          "seg_id_cls", "scope", "hidden_size", 'initializer_range']
 
   def __init__(self, block_size, vocab_size, d_embed, d_model, n_head,
                d_head, d_inner, dropout, dropatt, dropact, ff_activation,
@@ -119,7 +122,9 @@ class ModelConfig(object):
                 verbose=False,
                 truncate_seq=True,
                 seg_id_cls=2,
-                scope="model"):
+                scope="model", 
+                hidden_size=768,
+                initializer_range=0.01):
 
     """Initialize model config."""
     assert vocab_size == FLAGS.vocab_size, "Vocabulary size does not match."
@@ -137,6 +142,7 @@ class ModelConfig(object):
     self.n_head = n_head
     self.d_head = d_head
     self.d_inner = d_inner
+    self.hidden_size = self.d_model
 
     self.dropout = dropout
     self.dropatt = dropatt
@@ -146,6 +152,7 @@ class ModelConfig(object):
     self.init = init
     self.init_std = init_std
     self.init_range = init_range
+    self.initializer_range = initializer_range
 
     self.rel_attn_type = rel_attn_type
 
