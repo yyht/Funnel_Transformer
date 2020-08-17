@@ -779,7 +779,7 @@ def get_model_fn(n_class, model_type):
         net_config = modeling.ModelConfig.init_from_flags()
       net_config.to_json(os.path.join(FLAGS.model_dir, "net_config.json"))
       model = modeling.FunnelTFM(net_config)
-    elif model_type == 'my':
+    elif model_type == 'official':
       net_config_path = os.path.join(FLAGS.model_dir, "net_config_base_my.json")
       model = my_modeling.FunnelTFM(net_config_path)
 
@@ -1109,7 +1109,7 @@ def main(_):
   tf.logging.info("Label list for task %s: %s", FLAGS.task_name, label_list)
 
   # Model function
-  model_type = 'my'
+  model_type = 'official'
   model_fn = get_model_fn(len(label_list), model_type)
 
   # TPU Configuration
