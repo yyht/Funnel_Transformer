@@ -102,7 +102,7 @@ class ModelConfig(object):
           "init", "init_std", "init_range", "rel_attn_type", "separate_cls",
           "pooling_type", "pooling_size", "pool_q_only", "decoder_size",
           "if_skip_connetion", "pretrain_loss", "corrupted",
-          "denoise_mode", 'use_bfloat16']
+          "denoise_mode", 'use_bfloat16', "verbose"]
 
   def __init__(self, block_size, vocab_size, d_embed, d_model, n_head,
                d_head, d_inner, dropout, dropatt, dropact, ff_activation,
@@ -114,7 +114,8 @@ class ModelConfig(object):
                 pretrain_loss="ae",
                 corrupted=False,
                 denoise_mode="denoise",
-                use_bfloat16=False):
+                use_bfloat16=False,
+                verbose=False):
 
     """Initialize model config."""
     assert vocab_size == FLAGS.vocab_size, "Vocabulary size does not match."
@@ -124,6 +125,7 @@ class ModelConfig(object):
     self.corrupted = corrupted
     self.denoise_mode = denoise_mode
     self.use_bfloat16 = use_bfloat16
+    self.verbose = verbose
     self.d_embed = d_embed
     self.d_model = d_model
     self.n_head = n_head
