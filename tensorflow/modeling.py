@@ -103,7 +103,7 @@ class ModelConfig(object):
           "pooling_type", "pooling_size", "pool_q_only", "decoder_size",
           "if_skip_connetion", "pretrain_loss", "corrupted",
           "denoise_mode", 'use_bfloat16', "verbose", "truncate_seq",
-          "seg_id_cls", "separate_cls"]
+          "seg_id_cls"]
 
   def __init__(self, block_size, vocab_size, d_embed, d_model, n_head,
                d_head, d_inner, dropout, dropatt, dropact, ff_activation,
@@ -118,8 +118,7 @@ class ModelConfig(object):
                 use_bfloat16=False,
                 verbose=False,
                 truncate_seq=True,
-                seg_id_cls=2,
-                separate_cls=True):
+                seg_id_cls=2):
 
     """Initialize model config."""
     assert vocab_size == FLAGS.vocab_size, "Vocabulary size does not match."
@@ -129,6 +128,7 @@ class ModelConfig(object):
     self.corrupted = corrupted
     self.denoise_mode = denoise_mode
     self.use_bfloat16 = use_bfloat16
+    self.truncate_seq = truncate_seq
     self.verbose = verbose
     self.d_embed = d_embed
     self.d_model = d_model
