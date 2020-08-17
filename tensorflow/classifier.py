@@ -123,6 +123,9 @@ flags.DEFINE_integer("num_passes", default=1,
 flags.DEFINE_string("cls_scope", default=None,
                     help="Classifier layer scope.")
 
+flags.DEFINE_string("scope", default="model",
+                    help="Classifier layer scope.")
+
 # debug
 flags.DEFINE_bool("debug_mode", False, "Run the debug mode.")
 
