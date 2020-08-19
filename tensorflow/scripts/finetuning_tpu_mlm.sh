@@ -29,7 +29,7 @@ uncased=True
 tokenizer_type=word_piece
 tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
 init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt-1145800
-model_config=${GS_INIT_CKPT_DIR}/net_config_small_chinese_enc_dec_no_skip_uncased_english.json
+model_config=${GS_INIT_CKPT_DIR}/net_config_small_chinese_enc_dec_no_skip_denoise_mlm_uncased_english.json
 
 bsz=16
 NUM_HOSTS=1
