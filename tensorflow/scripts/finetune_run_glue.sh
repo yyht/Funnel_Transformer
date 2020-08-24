@@ -1,18 +1,18 @@
 #!/bin/bash
 
 
-TPU_NAME=albert1
+TPU_NAME=albert0
 
 # TPU v2-8 (base models) or v3-8 (large models)
 NUM_HOSTS=1
 NUM_CORE_PER_HOST=8
 
 GS_ROOT=gs://yyht_source/pretrain
-GS_INIT_CKPT_DIR=${GS_ROOT}/model/english/tiny/bert_small_span_mask_real_attn_net_config_tiny_enc_dec_no_skip_denoise_mlm
+GS_INIT_CKPT_DIR=${GS_ROOT}/model/english/tiny/bert_small_span_mask_real_attn_net_config_tiny_enc_dec_no_skip_normal_ce
 
-task=rte
+task=sts-b
 root_data_dir=${GS_ROOT}/glue
-root_model_dir=${GS_ROOT}/proc_data/glue/mlm
+root_model_dir=${GS_ROOT}/proc_data/glue/enc_dec_normal_ce
 
 # task=sts-b
 # data_dir=${GS_ROOT}/data/glue/STS-B
@@ -29,8 +29,8 @@ root_model_dir=${GS_ROOT}/proc_data/glue/mlm
 uncased=True
 tokenizer_type=word_piece
 tokenizer_path=${GS_INIT_CKPT_DIR}/vocab.uncased.txt
-init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt-1145800
-model_config=${GS_INIT_CKPT_DIR}/net_config_small_chinese_enc_dec_no_skip_denoise_mlm_uncased_english.json
+init_checkpoint=${GS_INIT_CKPT_DIR}/model.ckpt-1100800
+model_config=${GS_INIT_CKPT_DIR}/net_config_small_chinese_enc_dec_no_skip_uncased_english.json
 
 bsz=16
 NUM_HOSTS=1
