@@ -1055,7 +1055,7 @@ def task_run(task_name):
     'iterations': 12271,
     'save_steps': 12271,
     'train_steps': 36815,
-    'warmup_steps': 3681}
+    'warmup_steps': 3681},
    'mrpc': {'batch_size': 16,
     'data_size': 3668,
     'epoch': 10,
